@@ -75,10 +75,11 @@ class Ui_BrayleConvertor(object):
 
     def open_help(self):
         print("проверка поступления сигнала")
-        self.dialog = QtWidgets.QDialog()
+        self.dialog = QtWidgets.QDialog()  # QDialog для диалогового окна
         self.ui_help = Ui_HelpWindow()
         self.ui_help.setupUi(self.dialog)
-        self.dialog.exec()
+        self.dialog.exec()  # Ожидаем закрытия окна
+
 
 
 if __name__ == "__main__":

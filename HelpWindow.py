@@ -9,27 +9,27 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 
 
+
 class Ui_HelpWindow(object):
     def setupUi(self, HelpWindow):
         HelpWindow.setObjectName("HelpWindow")
         HelpWindow.resize(400, 420)
 
-        self.centralwidget = QtWidgets.QWidget(parent=HelpWindow)
-        self.centralwidget.setObjectName("centralwidget")
+        # Устанавливаем layout, подходящий для QDialog
+        layout = QtWidgets.QVBoxLayout(HelpWindow)
 
-        self.label = QtWidgets.QLabel(parent=self.centralwidget)
-        self.label.setGeometry(QtCore.QRect(0, 0, 400, 420))
+        self.label = QtWidgets.QLabel(parent=HelpWindow)
         font = QtGui.QFont()
         font.setPointSize(12)
         self.label.setFont(font)
-        self.label.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
-        self.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignJustify|QtCore.Qt.AlignmentFlag.AlignTop)
+        self.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignJustify | QtCore.Qt.AlignmentFlag.AlignTop)
         self.label.setObjectName("label")
 
-        HelpWindow.setCentralWidget(self.centralwidget)
+        layout.addWidget(self.label)  # Добавляем виджет в layout
 
         self.retranslateUi(HelpWindow)
         QtCore.QMetaObject.connectSlotsByName(HelpWindow)
+
 
     def retranslateUi(self, HelpWindow):
         _translate = QtCore.QCoreApplication.translate
