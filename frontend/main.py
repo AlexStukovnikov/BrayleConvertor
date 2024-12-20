@@ -1,6 +1,44 @@
+import os
 import sys
 from PyQt6 import QtCore, QtGui, QtWidgets
-from HelpWindow import Ui_HelpWindow
+
+# Функция для отладки исключений
+def debug_hook(type, value, traceback):
+    print(type, value, traceback)
+
+sys.excepthook = debug_hook
+
+class Ui_HelpWindow(object):
+    def __init__(self, html_content):
+        self.html_content = html_content
+
+    def setupUi(self, HelpWindow):
+        HelpWindow.setObjectName("HelpWindow")
+        HelpWindow.resize(400, 420)
+
+        # Устанавливаем layout, подходящий для QDialog
+        layout = QtWidgets.QVBoxLayout(HelpWindow)
+
+        self.label = QtWidgets.QLabel(parent=HelpWindow)
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.label.setFont(font)
+        self.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignJustify | QtCore.Qt.AlignmentFlag.AlignTop)
+        self.label.setObjectName("label")
+
+        layout.addWidget(self.label)  # Добавляем виджет в layout
+
+        self.retranslateUi(HelpWindow)
+        QtCore.QMetaObject.connectSlotsByName(HelpWindow)
+
+    def retranslateUi(self, HelpWindow):
+        _translate = QtCore.QCoreApplication.translate
+        HelpWindow.setWindowTitle(_translate("HelpWindow", "Справка"))
+        self.label.setText(_translate("HelpWindow", self.html_content))
+
+def load_html_content(file_path):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        return file.read()
 
 class Ui_BrayleConvertor(object):
     def setupUi(self, BrayleConvertor):
@@ -18,7 +56,7 @@ class Ui_BrayleConvertor(object):
         font.setPointSize(12)
         self.select_file.setFont(font)
         self.select_file.setObjectName("select_file")
-        self.select_file.clicked.connect(self.select_file_action) 
+        self.select_file.clicked.connect(self.select_file_action)
 
         self.bw_version_change = QtWidgets.QPushButton(parent=self.centralwidget)
         self.bw_version_change.setGeometry(QtCore.QRect(224, 4, 216, 48))
@@ -68,10 +106,12 @@ class Ui_BrayleConvertor(object):
 
     def open_help(self):
         print("проверка поступления сигнала")
-        self.dialog = QtWidgets.QDialog() 
-        self.ui_help = Ui_HelpWindow()
+        self.dialog = QtWidgets.QDialog()
+        html_file_path = os.path.join(os.path.dirname(__file__), 'help_content.html')
+        html_content = load_html_content(html_file_path)
+        self.ui_help = Ui_HelpWindow(html_content)
         self.ui_help.setupUi(self.dialog)
-        self.dialog.exec() 
+        self.dialog.exec()
 
     def select_file_action(self):
         # Открытие диалога выбора файла
@@ -79,10 +119,9 @@ class Ui_BrayleConvertor(object):
             None, "Выберите файл", "", "Все файлы (*)"
         )
         # Вывод названия файла
-        if file_path:  
-            file_name = file_path.split("/")[-1] 
-            self.label_before_select.setText(file_name)  
-
+        if file_path:
+            file_name = file_path.split("/")[-1]
+            self.label_before_select.setText(file_name)
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
