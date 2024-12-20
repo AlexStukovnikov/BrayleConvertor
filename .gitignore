@@ -368,3 +368,9 @@ compile_commands.json
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,python,qt,qtcreator,pycharm+all
+
+# Local project
+
+*.musicxml
+*.mxl
+*.brf
