@@ -1,7 +1,31 @@
 from music21 import converter
+from typing import Callable
+from functools import wraps
 import csv
+import os
+import logging
 
 def convert(target_file_path, output_file_path):
+    def file_not_found_handler(f: Callable):
+        @wraps(f)
+        def wrapper():
+            try:
+                f()
+            except FileNotFoundError or converter.ConverterException as e:
+                logging.exception(e)
+                raise
+        return wrapper
+    
+    def file_exists_handler(f: Callable):
+        @wraps(f)
+        def wrapper():
+            try:
+                f()
+            except FileExistsError as e:
+                logging.exception(e)
+                raise
+        return wrapper
+    
     # Генерация таблицы соответствий
     note_to_braille = {}
     # Символы для натуральных нот, диезов и бемолей
@@ -16,14 +40,22 @@ def convert(target_file_path, output_file_path):
             note_to_braille[f"{note}#{octave}"] = sharp_prefix + braille_symbol # Диезы
             note_to_braille[f"{note}♭{octave}"] = flat_prefix + braille_symbol # Бемоли
 
-
+    braille_to_brf = []
     # Таблица соответствия символов Брайля и .brf
-    with open('braille_to_brf.csv') as braille_to_pdf_file:
-        braille_to_brf = dict(list(csv.reader(braille_to_pdf_file))[1:])
+    @file_not_found_handler
+    def __fill_brf():
+        with open(os.path.join(os.path.dirname(__file__), 'braille_to_brf.csv')) as _:
+            nonlocal braille_to_brf
+            braille_to_brf = dict(list(csv.reader(_))[1:])
+    __fill_brf()
 
-
-    # Загрузка MusicXML файла
-    score = converter.parse(target_file_path)  # Укажите путь к вашему файлу
+    score = []
+    @file_not_found_handler
+    def __parse_input_file():
+        nonlocal score 
+        score = converter.parse(os.path.join(os.path.dirname(__file__), target_file_path))  # Укажите путь к вашему файлу
+    __parse_input_file()
+    
     # Переменная для хранения нот в Брайле
     braille_notes = []
     # Извлечение нот и преобразование в Брайль
@@ -36,20 +68,21 @@ def convert(target_file_path, output_file_path):
                 braille_notes.append(braille_symbol)
             elif element.isChord:
                 # Преобразование аккорда
-                print(element.notes)
                 chord_symbols = [note_to_braille.get(n.nameWithOctave, '?') for n in element.notes]
                 braille_notes.append("".join(chord_symbols))  # Объединяем символы нот аккорда
-                print(chord_symbols)
             elif element.isRest:
                 # Паузы можно обозначать отдельным символом, например, '⠿'
                 braille_notes.append('⠿')
 
     # Конвертация файла .brf с Брайлем в ASCII
-    with open(output_file_path, "w", encoding="utf-8") as output_file_path:
-        ascii_line = "".join([braille_to_brf.get(i, '?') for i in braille_notes])
-        output_file_path.write(ascii_line + "\n")
+    @file_exists_handler
+    def __fill_brf():
+        with open(output_file_path, "x", encoding="utf-8") as output_file:
+            output = " ".join([braille_to_brf.get(i, '?') for i in braille_notes])
+            output_file.write(output + "\n")
+    __fill_brf()
 
-if __name__ == 'main':
-    target_file_path = "Dichterliebe01.musicxml"
-    output_file_path = "output_ascii.brf"
+if __name__ == '__main__':
+    target_file_path = "We_Will_Rock_you.mxl"
+    output_file_path = "We_Will_Rock_you.brf"
     convert(target_file_path, output_file_path)
