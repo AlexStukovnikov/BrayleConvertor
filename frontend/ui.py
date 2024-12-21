@@ -1,12 +1,9 @@
 import os
 import sys
 from PyQt6 import QtCore, QtGui, QtWidgets
+import logging
 
-# Функция для отладки исключений
-def debug_hook(type, value, traceback):
-    print(type, value, traceback)
-
-sys.excepthook = debug_hook
+logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', datefmt='%d/%m/%Y %H:%M:%S')
 
 class Ui_HelpWindow(object):
     def __init__(self, html_content):
@@ -105,7 +102,7 @@ class Ui_BrayleConvertor(object):
         self.convert.setText(_translate("BrayleConvertor", "Конвертировать"))
 
     def open_help(self):
-        print("проверка поступления сигнала")
+        logging.debug('ui.Ui_BrayleConvertor.open_help() entered')
         self.dialog = QtWidgets.QDialog()
         html_file_path = os.path.join(os.path.dirname(__file__), 'help_content.html')
         html_content = load_html_content(html_file_path)
