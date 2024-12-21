@@ -1,6 +1,7 @@
 import os
 from PyQt6 import QtCore, QtGui, QtWidgets
 import logging
+from backend.convert import convert
 
 logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', datefmt='%d/%m/%Y %H:%M:%S', level=1)
 
@@ -91,6 +92,9 @@ class MainWindow():
 
         QtCore.QMetaObject.connectSlotsByName(QMainWindow)
 
+        #! TEMPORARY
+        self.output_file_path = os.path.join(os.path.dirname(__file__), "output.brf")
+
     def retranslate_ui(self, QMainWindow : QtWidgets.QMainWindow):
         _translate = QtCore.QCoreApplication.translate
         QMainWindow.setWindowTitle(_translate("QMainWindow", "QMainWindow"))
@@ -118,3 +122,14 @@ class MainWindow():
         if file_path:
             self.target_file_path = file_path
             self.label_before_select.setText(f"Выбранный файл: {file_path}")
+
+    def convert_file(self):
+        if not self.target_file_path:
+            logging.debug("ui.MainWindow.convert_file did not find target_file_path")
+            return
+        convert(self.target_file_path, self.output_file_path)
+        self.popup = QtWidgets.QMessageBox()
+        self.popup.setText(f"File {self.target_file_path} converted successfully and saved at {self.output_file_path}")
+    
+    def toggle_view(self):
+        pass
