@@ -47,6 +47,13 @@ class MainWindow():
         self.central_widget.setMinimumSize(QtCore.QSize(0, 470))
         self.central_widget.setObjectName("central_widget")
 
+        self.shortcuts = {
+            "select_file" : QtGui.QShortcut(QtGui.QKeySequence("Ctrl+O"),self.central_widget),
+            "convert_file" : QtGui.QShortcut(QtGui.QKeySequence("Ctrl+K"),self.central_widget),
+            "open_help" : QtGui.QShortcut(QtGui.QKeySequence("F1"),self.central_widget),
+            "toggle_view" : QtGui.QShortcut(QtGui.QKeySequence("Ctrl+V"),self.central_widget),
+        }
+        
         self.btn_select_file = QtWidgets.QPushButton(parent=self.central_widget)
         self.btn_select_file.setGeometry(QtCore.QRect(4, 4, 216, 48))
         font = QtGui.QFont()
@@ -54,6 +61,7 @@ class MainWindow():
         self.btn_select_file.setFont(font)
         self.btn_select_file.setObjectName("btn_select_file")
         self.btn_select_file.clicked.connect(self.select_file)
+        self.shortcuts["select_file"].activated.connect(self.select_file)
 
         self.btn_toggle_view = QtWidgets.QPushButton(parent=self.central_widget)
         self.btn_toggle_view.setGeometry(QtCore.QRect(224, 4, 216, 48))
@@ -61,6 +69,8 @@ class MainWindow():
         font.setPointSize(12)
         self.btn_toggle_view.setFont(font)
         self.btn_toggle_view.setObjectName("btn_toggle_view")
+        self.btn_toggle_view.clicked.connect(self.toggle_view)
+        self.shortcuts["toggle_view"].activated.connect(self.toggle_view)
 
         self.btn_open_help = QtWidgets.QPushButton(parent=self.central_widget)
         self.btn_open_help.setGeometry(QtCore.QRect(588, 4, 128, 48))
@@ -69,6 +79,7 @@ class MainWindow():
         self.btn_open_help.setFont(font)
         self.btn_open_help.setObjectName("btn_open_help")
         self.btn_open_help.clicked.connect(self.open_help)
+        self.shortcuts["open_help"].activated.connect(self.open_help)
 
         self.label_before_select = QtWidgets.QLabel(parent=self.central_widget)
         self.label_before_select.setGeometry(QtCore.QRect(220, 120, 280, 40))
@@ -85,6 +96,8 @@ class MainWindow():
         self.btn_convert_file.setFont(font)
         self.btn_convert_file.setDefault(False)
         self.btn_convert_file.setObjectName("btn_convert_file")
+        self.btn_convert_file.clicked.connect(self.convert_file)
+        self.shortcuts["convert_file"].activated.connect(self.convert_file)
 
         QMainWindow.setCentralWidget(self.central_widget)
 
