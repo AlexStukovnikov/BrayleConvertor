@@ -44,10 +44,17 @@ def load_html_content(file_path):
         return ""
 
 class MainWindow():
+    def __init__(self):
+        self.is_grayscale = False
+
     def setup_ui(self, QMainWindow : QtWidgets.QMainWindow):
         QMainWindow.setObjectName("QMainWindow")
         QMainWindow.setEnabled(True)
         QMainWindow.resize(720, 488)
+
+        palette = QtGui.QPalette()
+        palette.setColor(QtGui.QPalette.ColorRole.Window, QtGui.QColor(255, 250, 250))
+        QMainWindow.setPalette(palette)
 
         self.central_widget = QtWidgets.QWidget(parent=QMainWindow)
         self.central_widget.setMinimumSize(QtCore.QSize(0, 470))
@@ -62,6 +69,7 @@ class MainWindow():
 
         self.btn_select_file = QtWidgets.QPushButton(parent=self.central_widget)
         self.btn_select_file.setGeometry(QtCore.QRect(4, 4, 216, 48))
+        self.btn_select_file.setStyleSheet("background-color: white")
         font = QtGui.QFont()
         font.setPointSize(12)
         self.btn_select_file.setFont(font)
@@ -71,6 +79,7 @@ class MainWindow():
 
         self.btn_toggle_view = QtWidgets.QPushButton(parent=self.central_widget)
         self.btn_toggle_view.setGeometry(QtCore.QRect(224, 4, 216, 48))
+        self.btn_select_file.setStyleSheet("background-color: white")
         font = QtGui.QFont()
         font.setPointSize(12)
         self.btn_toggle_view.setFont(font)
@@ -80,6 +89,7 @@ class MainWindow():
 
         self.btn_open_help = QtWidgets.QPushButton(parent=self.central_widget)
         self.btn_open_help.setGeometry(QtCore.QRect(588, 4, 128, 48))
+        self.btn_select_file.setStyleSheet("background-color: white")
         font = QtGui.QFont()
         font.setPointSize(12)
         self.btn_open_help.setFont(font)
@@ -97,6 +107,7 @@ class MainWindow():
 
         self.btn_convert_file = QtWidgets.QPushButton(parent=self.central_widget)
         self.btn_convert_file.setGeometry(QtCore.QRect(240, 240, 240, 80))
+        self.btn_convert_file.setStyleSheet("background-color: #FFC0CB")
         font = QtGui.QFont()
         font.setPointSize(14)
         self.btn_convert_file.setFont(font)
@@ -172,20 +183,28 @@ class MainWindow():
         self.popup = QtWidgets.QMessageBox()
         self.popup.setText(f"File {self.target_file_path} converted successfully and saved at {self.output_file_path}")
 
-    #    def convert_file(self):
-    #        try:
-#            # Код конвертации файла
-#            pass
-#        except Exception as e:
-#            # Обработка ошибки конвертации
-#            logging.error(f"Ошибка при конвертации файла: {e}")
-#            msg = QtWidgets.QMessageBox()
-#            msg.setWindowTitle("Ошибка")
-#            msg.setText("Ошибка при конвертации файла")
-#            msg.exec()
-
     def toggle_view(self):
-        pass
+        logging.debug('ui.MainWindow.toggle_view() entered')
+        if self.is_grayscale:
+            self.is_grayscale = False
+            palette = QtGui.QPalette()
+            palette.setColor(QtGui.QPalette.ColorRole.Window, QtGui.QColor(255, 250, 250))
+            qmw.setPalette(palette)
+
+            self.btn_convert_file.setStyleSheet("background-color: #FFC0CB")
+            self.btn_toggle_view.setText("Версия для слабовидящих")
+
+            logging.info('Changed into colored mode')
+        else:
+            self.is_grayscale = True
+            palette = QtGui.QPalette()
+            palette.setColor(QtGui.QPalette.ColorRole.Window, QtGui.QColor(235, 235, 235))
+            qmw.setPalette(palette)
+
+            self.btn_convert_file.setStyleSheet("background-color: #C0C0C0")
+            self.btn_toggle_view.setText("Цветная версия")
+
+            logging.info('Changed into bw mode')
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
