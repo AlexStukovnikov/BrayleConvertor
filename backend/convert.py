@@ -54,7 +54,7 @@ def convert(target_file_path, output_file_path):
     @file_not_found_handler
     def _parse_input_file():
         nonlocal score 
-        score = converter.parse(os.path.join(os.path.dirname(__file__), target_file_path))  # Укажите путь к вашему файлу
+        score = converter.parse(target_file_path)  # Укажите путь к вашему файлу
     _parse_input_file()
     
     # Переменная для хранения нот в Брайле
@@ -84,6 +84,7 @@ def convert(target_file_path, output_file_path):
     _fill_brf()
 
 if __name__ == '__main__':
-    target_file_path = "We_Will_Rock_you.mxl"
-    output_file_path = "We_Will_Rock_you.brf"
+    FILE_ROOT = os.path.dirname(__file__)
+    target_file_path = os.path.join(FILE_ROOT, "We_Will_Rock_you.mxl")
+    output_file_path = os.path.join(FILE_ROOT, "We_Will_Rock_you.brf")
     convert(target_file_path, output_file_path)
