@@ -44,18 +44,18 @@ def convert(target_file_path, output_file_path):
     braille_to_brf = []
     # Таблица соответствия символов Брайля и .brf
     @file_not_found_handler
-    def __fill_brf():
+    def _fill_brf():
         with open(os.path.join(os.path.dirname(__file__), 'braille_to_brf.csv')) as _:
             nonlocal braille_to_brf
             braille_to_brf = dict(list(csv.reader(_))[1:])
-    __fill_brf()
+    _fill_brf()
 
     score = []
     @file_not_found_handler
-    def __parse_input_file():
+    def _parse_input_file():
         nonlocal score 
         score = converter.parse(os.path.join(os.path.dirname(__file__), target_file_path))  # Укажите путь к вашему файлу
-    __parse_input_file()
+    _parse_input_file()
     
     # Переменная для хранения нот в Брайле
     braille_notes = []
@@ -77,11 +77,11 @@ def convert(target_file_path, output_file_path):
 
     # Конвертация файла .brf с Брайлем в ASCII
     @file_exists_handler
-    def __fill_brf():
+    def _fill_brf():
         with open(output_file_path, "x", encoding="utf-8") as output_file:
             output = " ".join([braille_to_brf.get(i, '?') for i in braille_notes])
             output_file.write(output + "\n")
-    __fill_brf()
+    _fill_brf()
 
 if __name__ == '__main__':
     target_file_path = "We_Will_Rock_you.mxl"
