@@ -1,5 +1,4 @@
 import os
-import sys
 from PyQt6 import QtCore, QtGui, QtWidgets
 import logging
 from backend.convert import convert
@@ -35,13 +34,8 @@ class HelpWindow():
         self.label.setText(_translate("HelpWindow", self.html_content))
 
 def load_html_content(file_path):
-    try:
-        with open(file_path, 'r', encoding='utf-8') as file:
-            return file.read()
-    except FileNotFoundError as e:
-        # Обработка ошибки чтения файла
-        logging.error(f"Ошибка чтения файла: {e}")
-        return ""
+    with open(file_path, 'r', encoding='utf-8') as file:
+        return file.read()
 
 class MainWindow():
     def __init__(self):
@@ -66,7 +60,7 @@ class MainWindow():
             "open_help" : QtGui.QShortcut(QtGui.QKeySequence("F1"),self.central_widget),
             "toggle_view" : QtGui.QShortcut(QtGui.QKeySequence("Ctrl+V"),self.central_widget),
         }
-
+        
         self.btn_select_file = QtWidgets.QPushButton(parent=self.central_widget)
         self.btn_select_file.setGeometry(QtCore.QRect(4, 4, 216, 48))
         self.btn_select_file.setStyleSheet("background-color: white")
@@ -139,14 +133,6 @@ class MainWindow():
         self.dialog = QtWidgets.QDialog()
         html_file_path = os.path.join(os.path.dirname(__file__), 'help_content.html')
         html_content = load_html_content(html_file_path)
-        if html_content == "":
-            # Обработка ошибки чтения файла справки
-            logging.error("Не удалось загрузить файл справки")
-            msg = QtWidgets.QMessageBox()
-            msg.setWindowTitle("Ошибка")
-            msg.setText("Не удалось загрузить файл справки")
-            msg.exec()
-            return
         self.ui_help = HelpWindow(html_content)
         self.ui_help.setup_ui(self.dialog)
         self.dialog.exec()
@@ -156,20 +142,6 @@ class MainWindow():
         file_path, _ = QtWidgets.QFileDialog.getOpenFileName(
             None, "Выберите файл", "", "Все файлы (*)"
         )
-
-        # Обработка ошибки чтения файла
-        if file_path:
-            try:
-                with open(file_path, 'r', encoding='utf-8') as file:
-                    pass  # Код, который использует содержимое файла
-            except FileNotFoundError as e:
-                # Обработка ошибки чтения файла
-                logging.error(f"Ошибка чтения файла: {e}")
-                msg = QtWidgets.QMessageBox()
-                msg.setWindowTitle("Ошибка")
-                msg.setText("Не удалось прочитать выбранный файл")
-                msg.exec()
-                return
         # Вывод названия файла
         if file_path:
             self.target_file_path = file_path
@@ -182,7 +154,7 @@ class MainWindow():
         convert(self.target_file_path, self.output_file_path)
         self.popup = QtWidgets.QMessageBox()
         self.popup.setText(f"File {self.target_file_path} converted successfully and saved at {self.output_file_path}")
-
+    
     def toggle_view(self):
         logging.debug('ui.MainWindow.toggle_view() entered')
         if self.is_grayscale:
