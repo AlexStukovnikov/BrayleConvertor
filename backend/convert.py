@@ -7,26 +7,20 @@ import logging
 
 logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', datefmt='%d/%m/%Y %H:%M:%S', level=1)
 def convert(target_file_path, output_file_path):
-    def file_not_found_handler(f: Callable):
-        @wraps(f)
-        def wrapper():
-            try:
-                f()
-            except FileNotFoundError or converter.ConverterException as e:
-                logging.exception(e)
-                raise
-        return wrapper
-    
-    def file_exists_handler(f: Callable):
-        @wraps(f)
-        def wrapper():
-            try:
-                f()
-            except FileExistsError as e:
-                logging.exception(e)
-                raise
-        return wrapper
-    
+
+    def _error_handler(*exceptions: Exception):
+        def _handler(f: Callable):
+            @wraps(f)
+            def _wrapper():
+                try:
+                    f()
+                except exceptions as e:
+                    logging.exception(e)
+                    raise
+            return _wrapper
+        return _handler
+
+
     # Генерация таблицы соответствий
     note_to_braille = {}
     # Символы для натуральных нот, диезов и бемолей
@@ -43,7 +37,7 @@ def convert(target_file_path, output_file_path):
 
     braille_to_brf = []
     # Таблица соответствия символов Брайля и .brf
-    @file_not_found_handler
+    @_error_handler(FileNotFoundError)
     def _fill_brf():
         with open(os.path.join(os.path.dirname(__file__), 'braille_to_brf.csv')) as _:
             nonlocal braille_to_brf
@@ -51,7 +45,7 @@ def convert(target_file_path, output_file_path):
     _fill_brf()
 
     score = []
-    @file_not_found_handler
+    @_error_handler(FileNotFoundError, converter.ConverterException)
     def _parse_input_file():
         nonlocal score 
         score = converter.parse(target_file_path)  # Укажите путь к вашему файлу
@@ -76,7 +70,7 @@ def convert(target_file_path, output_file_path):
                 braille_notes.append('⠿')
 
     # Конвертация файла .brf с Брайлем в ASCII
-    @file_exists_handler
+    @_error_handler(FileExistsError)
     def _fill_brf():
         with open(output_file_path, "x", encoding="utf-8") as output_file:
             output = " ".join([braille_to_brf.get(i, '?') for i in braille_notes])
