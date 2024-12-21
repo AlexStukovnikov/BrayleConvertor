@@ -122,6 +122,10 @@ class MainWindow():
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
+
+    ICON_FILE_PATH=os.path.join(Path(os.path.dirname(__file__)).parent, 'Orca.svg')
+    app.setWindowIcon(QtGui.QIcon(ICON_FILE_PATH))
+    
     qmw = QtWidgets.QMainWindow()
     ui = MainWindow()
     ui.setup_ui(qmw)
