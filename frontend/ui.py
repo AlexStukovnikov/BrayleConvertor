@@ -1,11 +1,10 @@
 import os
-import sys
 from PyQt6 import QtCore, QtGui, QtWidgets
 import logging
 
 logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', datefmt='%d/%m/%Y %H:%M:%S', level=1)
 
-class HelpWindow(object):
+class HelpWindow():
     def __init__(self, html_content):
         self.html_content = html_content
 
@@ -117,17 +116,5 @@ class MainWindow():
         )
         # Вывод названия файла
         if file_path:
-            file_name = file_path.split("/")[-1]
-            self.label_before_select.setText(file_name)
-
-if __name__ == "__main__":
-    app = QtWidgets.QApplication(sys.argv)
-
-    ICON_FILE_PATH=os.path.join(Path(os.path.dirname(__file__)).parent, 'Orca.svg')
-    app.setWindowIcon(QtGui.QIcon(ICON_FILE_PATH))
-    
-    qmw = QtWidgets.QMainWindow()
-    ui = MainWindow()
-    ui.setup_ui(qmw)
-    qmw.show()
-    sys.exit(app.exec())
+            self.target_file_path = file_path
+            self.label_before_select.setText(f"Выбранный файл: {file_path}")
