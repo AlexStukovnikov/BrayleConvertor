@@ -78,13 +78,13 @@ class MainWindow():
         self.label_before_select.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label_before_select.setObjectName("label_before_select")
 
-        self.convert = QtWidgets.QPushButton(parent=self.central_widget)
-        self.convert.setGeometry(QtCore.QRect(240, 240, 240, 80))
+        self.btn_convert_file = QtWidgets.QPushButton(parent=self.central_widget)
+        self.btn_convert_file.setGeometry(QtCore.QRect(240, 240, 240, 80))
         font = QtGui.QFont()
         font.setPointSize(14)
-        self.convert.setFont(font)
-        self.convert.setDefault(False)
-        self.convert.setObjectName("convert")
+        self.btn_convert_file.setFont(font)
+        self.btn_convert_file.setDefault(False)
+        self.btn_convert_file.setObjectName("btn_convert_file")
 
         QMainWindow.setCentralWidget(self.central_widget)
 
@@ -99,7 +99,7 @@ class MainWindow():
         self.btn_toggle_view.setText(_translate("QMainWindow", "Версия для слабовидящих"))
         self.btn_open_help.setText(_translate("QMainWindow", "Справка"))
         self.label_before_select.setText(_translate("QMainWindow", "Выберите файл для конвертации"))
-        self.convert.setText(_translate("QMainWindow", "Конвертировать"))
+        self.btn_convert_file.setText(_translate("QMainWindow", "Конвертировать"))
 
     def open_help(self):
         logging.debug('ui.MainWindow.open_help() entered')
