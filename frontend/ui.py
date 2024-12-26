@@ -37,11 +37,13 @@ class HelpWindow(QtWidgets.QWidget):
     def __init__(self, html_content):
         super().__init__()
         self.html_content = html_content
+        self._error_handler = _error_handler
+        self.setWindowTitle("Справка")
 
         self.resize(400, 420)
         self.setObjectName("HelpWindow")
 
-        self.label = QtWidgets.QLabel("Справка", parent=self)
+        self.label = QtWidgets.QLabel(self.html_content, parent=self)
         self.label.setFont(QtGui.QFont(None,12))
         self.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignJustify | QtCore.Qt.AlignmentFlag.AlignTop)
         self.label.setObjectName("label")
@@ -197,7 +199,7 @@ class MainWindow(QtWidgets.QMainWindow):
     '''
     def open_help(self, _event):
         logging.debug('ui.MainWindow.open_help() entered')
-        
+
         if self.help_window.isVisible():
             self.help_window.hide()
         else:
