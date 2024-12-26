@@ -2,12 +2,39 @@ import os
 from PyQt6 import QtCore, QtGui, QtWidgets
 import logging
 from backend.convert import convert
+from typing import Callable
+from functools import wraps
+from music21.converter import ConverterException, ConverterFileException
+import sys
 
 logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', datefmt='%d/%m/%Y %H:%M:%S', level=1)
+
+def _create_popup(parent=None, title=None, desc=None):
+    popup = QtWidgets.QMessageBox(parent=parent)
+    popup.setWindowTitle(title)
+    popup.setText(desc)
+    popup.exec()
+
+def _error_handler(*exceptions: Exception, title=None, desc=None, level=None):
+    def _handler(f: Callable):
+        @wraps(f)
+        def _wrapper(*args, **kwargs):
+            try:
+                f(*args, **kwargs)
+            except exceptions as e:
+                nonlocal title
+                nonlocal desc
+                if not title: title = e.__notes__[0]
+                if not desc: desc = e.__notes__[1]
+                _create_popup(title=title,desc=desc)
+                logging.warning(e) if not level else logging.log(int(e.__notes__[2]),e)
+        return _wrapper
+    return _handler
 
 class HelpWindow():
     def __init__(self, html_content):
         self.html_content = html_content
+        self._error_handler = _error_handler
 
     def setup_ui(self, HelpWindow):
         HelpWindow.setObjectName("HelpWindow")
@@ -128,7 +155,10 @@ class MainWindow():
         self.label_before_select.setText(_translate("QMainWindow", "Выберите файл для конвертации"))
         self.btn_convert_file.setText(_translate("QMainWindow", "Конвертировать"))
 
-    def open_help(self):
+    '''
+    Apparently, QT signals pass implicit argument(s?) to a slot function: in this case, button's status (such as <bool> clicked), and normally this wouldn't matter, but if we use decorator on a function, it all falls apart, so we must put _event (or *args) as last argument in every single slot function
+    '''
+    def open_help(self, _event):
         logging.debug('ui.MainWindow.open_help() entered')
         self.dialog = QtWidgets.QDialog()
         html_file_path = os.path.join(os.path.dirname(__file__), 'help_content.html')
@@ -137,25 +167,25 @@ class MainWindow():
         self.ui_help.setup_ui(self.dialog)
         self.dialog.exec()
 
-    def select_file(self):
-        # Открытие диалога выбора файла
+    @_error_handler(OSError, title="Ошибка выбора файла", desc="Файл не найден: проверьте разрешения выбранного файла или родительской папки")
+    def select_file(self, _event):
         file_path, _ = QtWidgets.QFileDialog.getOpenFileName(
             None, "Выберите файл", "", "Все файлы (*)"
         )
-        # Вывод названия файла
-        if file_path:
+        if file_path is not None:
             self.target_file_path = file_path
             self.label_before_select.setText(f"Выбранный файл: {file_path}")
 
-    def convert_file(self):
-        if not self.target_file_path:
-            logging.debug("ui.MainWindow.convert_file did not find target_file_path")
-            return
-        convert(self.target_file_path, self.output_file_path)
-        self.popup = QtWidgets.QMessageBox()
-        self.popup.setText(f"File {self.target_file_path} converted successfully and saved at {self.output_file_path}")
+    @_error_handler(FileNotFoundError, title='Ошибка конвертации', desc='Файл не выбран')
+    @_error_handler(ConverterFileException, ConverterException, FileExistsError)
+    def convert_file(self, _event):
+        if not hasattr(self,'target_file_path'):
+            raise FileNotFoundError('File was not selected')
+        else:
+            convert(self.target_file_path, self.output_file_path)
+        _create_popup(title="Успех", desc=f"Файл {self.target_file_path} успешно сконвертирован и сохранен в {self.output_file_path}")
     
-    def toggle_view(self):
+    def toggle_view(self, _event):
         logging.debug('ui.MainWindow.toggle_view() entered')
         if self.is_grayscale:
             self.is_grayscale = False
