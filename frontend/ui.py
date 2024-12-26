@@ -43,7 +43,7 @@ class HelpWindow():
         # Устанавливаем layout, подходящий для QDialog
         layout = QtWidgets.QVBoxLayout(HelpWindow)
 
-        self.label = QtWidgets.QLabel(parent=HelpWindow)
+        self.label = QtWidgets.QLabel("Справка", parent=HelpWindow)
         font = QtGui.QFont()
         font.setPointSize(12)
         self.label.setFont(font)
@@ -52,17 +52,36 @@ class HelpWindow():
 
         layout.addWidget(self.label)  # Добавляем виджет в layout
 
-        self.retranslate_ui(HelpWindow)
+#        self.retranslate_ui(HelpWindow)
         QtCore.QMetaObject.connectSlotsByName(HelpWindow)
 
-    def retranslate_ui(self, HelpWindow):
-        _translate = QtCore.QCoreApplication.translate
-        HelpWindow.setWindowTitle(_translate("HelpWindow", "Справка"))
-        self.label.setText(_translate("HelpWindow", self.html_content))
+#    def retranslate_ui(self, HelpWindow):
+#        _translate = QtCore.QCoreApplication.translate
+#        HelpWindow.setWindowTitle(_translate("HelpWindow", "Справка"))
+#        self.label.setText(_translate("HelpWindow", self.html_content))
 
 def load_html_content(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
         return file.read()
+
+class SettingsWindow(QtWidgets.QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Настройки")
+
+    def setup_ui(self, SettingsWindow):
+        SettingsWindow.setObjectName("SettingsWindow")
+        SettingsWindow.resize(200, 200)
+
+        layout = QtWidgets.QVBoxLayout(self)
+
+        self.radio_option_1 = QtWidgets.QRadioButton("После конвертации автоматически сохранять по пути", self)
+        self.radio_option_2 = QtWidgets.QRadioButton("После конвертации спрашивать место сохранения", self)
+
+        layout.addWidget(self.radio_option_1)
+        layout.addWidget(self.radio_option_2)
+
+        self.radio_option_1.setChecked(True)
 
 class MainWindow():
     def __init__(self):
@@ -72,6 +91,7 @@ class MainWindow():
         QMainWindow.setObjectName("QMainWindow")
         QMainWindow.setEnabled(True)
         QMainWindow.resize(720, 488)
+        QMainWindow.setWindowTitle("BrailleConverter")
 
         palette = QtGui.QPalette()
         palette.setColor(QtGui.QPalette.ColorRole.Window, QtGui.QColor(255, 250, 250))
@@ -88,7 +108,7 @@ class MainWindow():
             "toggle_view" : QtGui.QShortcut(QtGui.QKeySequence("Ctrl+V"),self.central_widget),
         }
         
-        self.btn_select_file = QtWidgets.QPushButton(parent=self.central_widget)
+        self.btn_select_file = QtWidgets.QPushButton("Выбрать файл", parent=self.central_widget)
         self.btn_select_file.setGeometry(QtCore.QRect(4, 4, 216, 48))
         self.btn_select_file.setStyleSheet("background-color: white")
         font = QtGui.QFont()
@@ -98,7 +118,7 @@ class MainWindow():
         self.btn_select_file.clicked.connect(self.select_file)
         self.shortcuts["select_file"].activated.connect(self.select_file)
 
-        self.btn_toggle_view = QtWidgets.QPushButton(parent=self.central_widget)
+        self.btn_toggle_view = QtWidgets.QPushButton("Версия для слабовидящих", parent=self.central_widget)
         self.btn_toggle_view.setGeometry(QtCore.QRect(224, 4, 216, 48))
         self.btn_select_file.setStyleSheet("background-color: white")
         font = QtGui.QFont()
@@ -108,8 +128,8 @@ class MainWindow():
         self.btn_toggle_view.clicked.connect(self.toggle_view)
         self.shortcuts["toggle_view"].activated.connect(self.toggle_view)
 
-        self.btn_open_help = QtWidgets.QPushButton(parent=self.central_widget)
-        self.btn_open_help.setGeometry(QtCore.QRect(588, 4, 128, 48))
+        self.btn_open_help = QtWidgets.QPushButton("Справка", parent=self.central_widget)
+        self.btn_open_help.setGeometry(QtCore.QRect(536, 4, 128, 48))
         self.btn_select_file.setStyleSheet("background-color: white")
         font = QtGui.QFont()
         font.setPointSize(12)
@@ -118,15 +138,26 @@ class MainWindow():
         self.btn_open_help.clicked.connect(self.open_help)
         self.shortcuts["open_help"].activated.connect(self.open_help)
 
+        self.btn_settings = QtWidgets.QPushButton("S", parent=self.central_widget)
+        self.btn_settings.setGeometry(QtCore.QRect(668, 4, 48, 48))
+        self.btn_settings.setStyleSheet("background-color: white")
+        self.btn_settings.setFont(font)
+        self.btn_settings.clicked.connect(self.open_settings_menu)
         self.label_before_select = QtWidgets.QLabel(parent=self.central_widget)
         self.label_before_select.setGeometry(QtCore.QRect(220, 120, 280, 40))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+
+        self.label_before_select = QtWidgets.QLabel("Выберите файл для конвертации", parent=self.central_widget)
+        self.label_before_select.setGeometry(QtCore.QRect(220, 120, 280, 40))
+        self.label_before_select.setWordWrap(True)
         font = QtGui.QFont()
         font.setPointSize(12)
         self.label_before_select.setFont(font)
         self.label_before_select.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label_before_select.setObjectName("label_before_select")
 
-        self.btn_convert_file = QtWidgets.QPushButton(parent=self.central_widget)
+        self.btn_convert_file = QtWidgets.QPushButton("Конвертировать", parent=self.central_widget)
         self.btn_convert_file.setGeometry(QtCore.QRect(240, 240, 240, 80))
         self.btn_convert_file.setStyleSheet("background-color: #FFC0CB")
         font = QtGui.QFont()
@@ -137,23 +168,32 @@ class MainWindow():
         self.btn_convert_file.clicked.connect(self.convert_file)
         self.shortcuts["convert_file"].activated.connect(self.convert_file)
 
+        self.save_button = QtWidgets.QPushButton("Сохранить", parent=self.central_widget)
+        self.save_button.setGeometry(QtCore.QRect(240, 340, 240, 40))
+        self.save_button.setStyleSheet("background-color: #87CEFA")
+        font = QtGui.QFont()
+        font.setPointSize(14)
+        self.save_button.setFont(font)
+        self.save_button.hide()
+        self.save_button.clicked.connect(self.save_manually)
+
         QMainWindow.setCentralWidget(self.central_widget)
 
-        self.retranslate_ui(QMainWindow)
+#        self.retranslate_ui(QMainWindow)
 
         QtCore.QMetaObject.connectSlotsByName(QMainWindow)
 
         #! TEMPORARY
         self.output_file_path = os.path.join(os.path.dirname(__file__), "output.brf")
 
-    def retranslate_ui(self, QMainWindow : QtWidgets.QMainWindow):
-        _translate = QtCore.QCoreApplication.translate
-        QMainWindow.setWindowTitle(_translate("QMainWindow", "QMainWindow"))
-        self.btn_select_file.setText(_translate("QMainWindow", "Выбрать файл"))
-        self.btn_toggle_view.setText(_translate("QMainWindow", "Версия для слабовидящих"))
-        self.btn_open_help.setText(_translate("QMainWindow", "Справка"))
-        self.label_before_select.setText(_translate("QMainWindow", "Выберите файл для конвертации"))
-        self.btn_convert_file.setText(_translate("QMainWindow", "Конвертировать"))
+#    def retranslate_ui(self, QMainWindow : QtWidgets.QMainWindow):
+#        _translate = QtCore.QCoreApplication.translate
+#        QMainWindow.setWindowTitle(_translate("QMainWindow", "QMainWindow"))
+#        self.btn_select_file.setText(_translate("QMainWindow", "Выбрать файл"))
+#        self.btn_toggle_view.setText(_translate("QMainWindow", "Версия для слабовидящих"))
+#        self.btn_open_help.setText(_translate("QMainWindow", "Справка"))
+#        self.label_before_select.setText(_translate("QMainWindow", "Выберите файл для конвертации"))
+#        self.btn_convert_file.setText(_translate("QMainWindow", "Конвертировать"))
 
     '''
     Apparently, QT signals pass implicit argument(s?) to a slot function: in this case, button's status (such as <bool> clicked), and normally this wouldn't matter, but if we use decorator on a function, it all falls apart, so we must put _event (or *args) as last argument in every single slot function
@@ -175,6 +215,20 @@ class MainWindow():
         if file_path is not None:
             self.target_file_path = file_path
             self.label_before_select.setText(f"Выбранный файл: {file_path}")
+
+    def open_settings_menu(self, _event):
+        logging.debug('ui.MainWindow.open_settings_menu() entered')
+        self.dialog = QtWidgets.QDialog()
+        self.ui_settings = SettingsWindow()
+        self.ui_settings.setup_ui(self.dialog)
+
+        if self.ui_settings.exec() == QtWidgets.QDialog.DialogCode.Accepted:
+            selected_option = 1 if self.ui_settings.radio_option_1.isChecked() else 2
+
+            logging.info(f"Выбрана опция: {selected_option}")
+
+    def save_manually(self):
+        pass
 
     @_error_handler(FileNotFoundError, title='Ошибка конвертации', desc='Файл не выбран')
     @_error_handler(ConverterFileException, ConverterException, FileExistsError)
