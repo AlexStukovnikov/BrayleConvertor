@@ -33,9 +33,9 @@ def _error_handler(*exceptions: Exception, title=None, desc=None, level=None):
 
 _oserror_handler = _error_handler(OSError, title="Ошибка выбора файла", desc="Файл не найден: проверьте разрешения выбранного файла или родительской папки")
 
-class HelpWindow(QtWidgets.QWidget):
-    def __init__(self, html_content):
-        super().__init__()
+class HelpWindow(QtWidgets.QDialog):
+    def __init__(self, html_content, parent=None):
+        super().__init__(parent=parent)
         self.html_content = html_content
         self._error_handler = _error_handler
         self.setWindowTitle("Справка")
@@ -91,6 +91,8 @@ class MainWindow(QtWidgets.QMainWindow):
         html_file_path = os.path.join(os.path.dirname(__file__), 'help_content.html')
         with open(html_file_path, 'r', encoding='utf-8') as file:
             html_content = file.read()
+        
+
         self.help_window = HelpWindow(html_content)
 
         self.is_grayscale = False
@@ -98,7 +100,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setObjectName("MainWindow")
         self.setEnabled(True)
         self.resize(720, 488)
-        self.setWindowTitle("BrailleConverter")
+        self.setWindowTitle("Braillehoven")
 
         palette = QtGui.QPalette()
         palette.setColor(QtGui.QPalette.ColorRole.Window, QtGui.QColor(255, 250, 250))
@@ -259,6 +261,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self.btn_toggle_view.setText("Цветная версия")
 
             logging.info('Changed into bw mode')
+
+    def closeEvent(self, _event):
+        logging.info("Closing...")
+        self.help_window.close()
+        _event.accept()
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
