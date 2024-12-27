@@ -6,7 +6,9 @@ from frontend.ui import MainWindow
 app = QtWidgets.QApplication(sys.argv)
 
 ICON_FILE_PATH=os.path.join(os.path.dirname(__file__), 'Orca.svg')
-app.setWindowIcon(QtGui.QIcon(ICON_FILE_PATH))
+app_icon = QtGui.QIcon(ICON_FILE_PATH)
+app_icon.addFile(ICON_FILE_PATH)
+app.setWindowIcon(app_icon)
 
 
 window = MainWindow()
