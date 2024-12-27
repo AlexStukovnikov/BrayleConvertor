@@ -42,7 +42,7 @@ def convert(target_file_path, output_file_path):
     # Таблица соответствия символов Брайля и .brf
     @_error_handler(FileNotFoundError, title='Ошибка компонента', desc="Компонент не найден, проверьте целостность файлов или переустановите программу", level=logging.ERROR)
     def _fill_braille_to_brf():
-        with open(os.path.join(os.path.dirname(__file__), 'braille_to_brf.csv')) as _:
+        with open(os.path.join(os.path.dirname(__file__), 'braille_to_brf.csv'), encoding='utf-8') as _:
             nonlocal braille_to_brf
             braille_to_brf = dict(list(csv.reader(_))[1:])
     _fill_braille_to_brf()
