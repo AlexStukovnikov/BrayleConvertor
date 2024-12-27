@@ -210,7 +210,7 @@ class MainWindow(QtWidgets.QMainWindow):
         file_path, _ = QtWidgets.QFileDialog.getOpenFileName(
             None, "Выберите файл", "", "Все файлы (*)"
         )
-        if file_path is not None:
+        if file_path!="":
             self.target_file_path = file_path
             self.label_before_select.setText(f"Выбранный файл: {file_path}")
 
