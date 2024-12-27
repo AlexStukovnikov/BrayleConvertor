@@ -6,6 +6,7 @@ from typing import Callable
 from functools import wraps
 from music21.converter import ConverterException, ConverterFileException
 import sys
+import pathlib
 
 logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', datefmt='%d/%m/%Y %H:%M:%S', level=1)
 
@@ -62,23 +63,35 @@ class HelpWindow(QtWidgets.QDialog):
 
 
 class SettingsWindow(QtWidgets.QDialog):
+    DEFAULT_OUTPUT_FILE_PATH = os.path.join(pathlib.Path(os.path.dirname(__file__)).parent, "output.brf")
+    
     def __init__(self, parent=None):
         super().__init__(parent)
+        
         self.setWindowTitle("Настройки")
+        self.setObjectName("SettingsWindow")
+        self.resize(200, 200)
 
-    def setup_ui(self, SettingsWindow):
-        SettingsWindow.setObjectName("SettingsWindow")
-        SettingsWindow.resize(200, 200)
+        self.radio_default_path = QtWidgets.QRadioButton(f"После конвертации автоматически сохранять по пути {SettingsWindow.DEFAULT_OUTPUT_FILE_PATH}", self)
+        self.radio_ask_path = QtWidgets.QRadioButton("После конвертации спрашивать место сохранения", self)
+
+        self.btn_group_choose_path = QtWidgets.QButtonGroup(self)
+        self.btn_group_choose_path.addButton(self.radio_default_path)
+        self.btn_group_choose_path.addButton(self.radio_ask_path)
+        self.btn_group_choose_path.buttonToggled.connect(self.change_path_settings)
 
         layout = QtWidgets.QVBoxLayout(self)
+        layout.addWidget(self.radio_default_path)
+        layout.addWidget(self.radio_ask_path)
+        self.setLayout(layout)
 
-        self.radio_option_1 = QtWidgets.QRadioButton("После конвертации автоматически сохранять по пути", self)
-        self.radio_option_2 = QtWidgets.QRadioButton("После конвертации спрашивать место сохранения", self)
-
-        layout.addWidget(self.radio_option_1)
-        layout.addWidget(self.radio_option_2)
-
-        self.radio_option_1.setChecked(True)
+    def change_path_settings(self, event=None):
+        logging.debug("ui.SettingsWindow.change_path_settings entered")
+        if self.btn_group_choose_path.checkedButton() == self.radio_ask_path:
+            self.parent().output_file_path = None
+        else:
+            self.parent().output_file_path = SettingsWindow.DEFAULT_OUTPUT_FILE_PATH
+        logging.debug(self.parent().output_file_path)
 
 class MainWindow(QtWidgets.QMainWindow):
     global _oserror_handler
@@ -93,7 +106,8 @@ class MainWindow(QtWidgets.QMainWindow):
             html_content = file.read()
         
 
-        self.help_window = HelpWindow(html_content)
+        self.help_window = HelpWindow(html_content, parent=self)
+        self.settings_window = SettingsWindow(parent=self)
 
         self.is_grayscale = False
 
@@ -147,7 +161,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_settings.setGeometry(QtCore.QRect(668, 4, 48, 48))
         self.btn_settings.setStyleSheet("background-color: white")
         self.btn_settings.setFont(font)
-        self.btn_settings.clicked.connect(self.open_settings_menu)
+        self.btn_settings.clicked.connect(self.open_settings)
         self.label_before_select = QtWidgets.QLabel(self)
         self.label_before_select.setGeometry(QtCore.QRect(220, 120, 280, 40))
         font = QtGui.QFont()
@@ -173,19 +187,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_convert_file.clicked.connect(self.convert_file)
         self.shortcuts["convert_file"].activated.connect(self.convert_file)
 
-        self.save_button = QtWidgets.QPushButton("Сохранить", parent=self)
-        self.save_button.setGeometry(QtCore.QRect(240, 340, 240, 40))
-        self.save_button.setStyleSheet("background-color: #87CEFA")
-        font = QtGui.QFont()
-        font.setPointSize(14)
-        self.save_button.setFont(font)
-        self.save_button.hide()
-        self.save_button.clicked.connect(self.save_manually)
-
         # self.retranslate_ui()
-
-        #! TEMPORARY
-        self.output_file_path = os.path.join(os.path.dirname(__file__), "output.brf")
 
 #    def retranslate_ui(self):
 #        _translate = QtCore.QCoreApplication.translate
@@ -197,9 +199,9 @@ class MainWindow(QtWidgets.QMainWindow):
 #        self.btn_convert_file.setText(_translate("QMainWindow", "Конвертировать"))
 
     '''
-    Apparently, QT signals pass implicit argument(s?) to a slot function: in this case, button's status (such as <bool> clicked), and normally this wouldn't matter, but if we use decorator on a function, it all falls apart, so we must put _event (or *args) as last argument in every single slot function
+    Apparently, QT signals pass implicit argument(s?) to a slot function: in this case, button's status (such as <bool> clicked), and normally this wouldn't matter, but if we use decorator on a function, it all falls apart, so we must put event (or *args) as last argument in every single slot function
     '''
-    def open_help(self, _event=None):
+    def open_help(self, event=None):
         logging.debug('ui.MainWindow.open_help() entered')
 
         if self.help_window.isVisible():
@@ -208,7 +210,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.help_window.show()
 
     @_oserror_handler
-    def select_file(self, _event=None):
+    def select_file(self, event=None):
         file_path, _ = QtWidgets.QFileDialog.getOpenFileName(
             None, "Выберите файл", "", "Все файлы (*)"
         )
@@ -216,30 +218,35 @@ class MainWindow(QtWidgets.QMainWindow):
             self.target_file_path = file_path
             self.label_before_select.setText(f"Выбранный файл: {file_path}")
 
-    def open_settings_menu(self, _event=None):
-        logging.debug('ui.MainWindow.open_settings_menu() entered')
-        self.dialog = QtWidgets.QDialog()
-        self.ui_settings = SettingsWindow()
-        self.ui_settings.setup_ui(self.dialog)
-
-        if self.ui_settings.exec() == QtWidgets.QDialog.DialogCode.Accepted:
-            selected_option = 1 if self.ui_settings.radio_option_1.isChecked() else 2
-
-            logging.info(f"Выбрана опция: {selected_option}")
-
-    def save_manually(self):
-        pass
+    def open_settings(self, event=None):
+        logging.debug('ui.MainWindow.open_settings() entered')
+        if self.settings_window.isVisible():
+            self.settings_window.hide()
+        else:
+            self.settings_window.show()
 
     @_error_handler(FileNotFoundError, title='Ошибка конвертации', desc='Файл не выбран')
-    @_error_handler(ConverterFileException, ConverterException, FileExistsError)
-    def convert_file(self, _event=None):
+    @_error_handler(ConverterFileException)
+    @_error_handler(ConverterException)
+    @_error_handler(FileExistsError)
+    def convert_file(self, event=None):
         if not hasattr(self,'target_file_path'):
             raise FileNotFoundError('File was not selected')
+        self.settings_window.change_path_settings()
+        if self.output_file_path is None: 
+            file_path, _ = QtWidgets.QFileDialog.getSaveFileName(
+                None, "Выберите название и путь файла", "", "Все файлы (*)"
+            )
+            if file_path!="":
+                convert(self.target_file_path, file_path)
+                _create_popup(title="Успех", desc=f"Файл {self.target_file_path} успешно сконвертирован и сохранен в {file_path}")
+            else:
+                _create_popup(title="Предупреждение", desc="Пожалуйста, выберите путь сохранения")
         else:
             convert(self.target_file_path, self.output_file_path)
-        _create_popup(title="Успех", desc=f"Файл {self.target_file_path} успешно сконвертирован и сохранен в {self.output_file_path}")
+            _create_popup(title="Успех", desc=f"Файл {self.target_file_path} успешно сконвертирован и сохранен в {self.output_file_path}")
     
-    def toggle_view(self, _event=None):
+    def toggle_view(self, event=None):
         logging.debug('ui.MainWindow.toggle_view() entered')
         if self.is_grayscale:
             self.is_grayscale = False
@@ -262,10 +269,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
             logging.info('Changed into bw mode')
 
-    def closeEvent(self, _event):
-        logging.info("Closing...")
-        self.help_window.close()
-        _event.accept()
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
