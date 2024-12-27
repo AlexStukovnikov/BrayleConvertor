@@ -197,7 +197,7 @@ class MainWindow(QtWidgets.QMainWindow):
     '''
     Apparently, QT signals pass implicit argument(s?) to a slot function: in this case, button's status (such as <bool> clicked), and normally this wouldn't matter, but if we use decorator on a function, it all falls apart, so we must put _event (or *args) as last argument in every single slot function
     '''
-    def open_help(self, _event):
+    def open_help(self, _event=None):
         logging.debug('ui.MainWindow.open_help() entered')
 
         if self.help_window.isVisible():
@@ -206,7 +206,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.help_window.show()
 
     @_oserror_handler
-    def select_file(self, _event):
+    def select_file(self, _event=None):
         file_path, _ = QtWidgets.QFileDialog.getOpenFileName(
             None, "Выберите файл", "", "Все файлы (*)"
         )
@@ -214,7 +214,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.target_file_path = file_path
             self.label_before_select.setText(f"Выбранный файл: {file_path}")
 
-    def open_settings_menu(self, _event):
+    def open_settings_menu(self, _event=None):
         logging.debug('ui.MainWindow.open_settings_menu() entered')
         self.dialog = QtWidgets.QDialog()
         self.ui_settings = SettingsWindow()
@@ -230,14 +230,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @_error_handler(FileNotFoundError, title='Ошибка конвертации', desc='Файл не выбран')
     @_error_handler(ConverterFileException, ConverterException, FileExistsError)
-    def convert_file(self, _event):
+    def convert_file(self, _event=None):
         if not hasattr(self,'target_file_path'):
             raise FileNotFoundError('File was not selected')
         else:
             convert(self.target_file_path, self.output_file_path)
         _create_popup(title="Успех", desc=f"Файл {self.target_file_path} успешно сконвертирован и сохранен в {self.output_file_path}")
     
-    def toggle_view(self, _event):
+    def toggle_view(self, _event=None):
         logging.debug('ui.MainWindow.toggle_view() entered')
         if self.is_grayscale:
             self.is_grayscale = False
