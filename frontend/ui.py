@@ -41,13 +41,14 @@ class HelpWindow(QtWidgets.QDialog):
         self._error_handler = _error_handler
         self.setWindowTitle("Справка")
 
-        self.resize(400, 420)
+        self.resize(440, 420)
         self.setObjectName("HelpWindow")
 
         self.label = QtWidgets.QLabel(self.html_content, parent=self)
         self.label.setFont(QtGui.QFont(None,12))
         self.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignJustify | QtCore.Qt.AlignmentFlag.AlignTop)
         self.label.setObjectName("label")
+        self.label.setWordWrap(True)
 
         layout = QtWidgets.QVBoxLayout(self)
         layout.addWidget(self.label)
